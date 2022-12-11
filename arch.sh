@@ -169,6 +169,54 @@ vim ~/scripts/lemonbar/config # add new pcs width
 
 #install Xorg display server
 sudo pacman -Ss xorg-server # search the package
-sudo pacman -Syu xorg-server 
+sudo pacman -S xorg-server or -Syu for updating the packages
 
-#install display manager
+
+#install display manager GDM
+sudo pacman -S gdm
+sudo systemctl enable gdm.service
+#little explanation what's happening here: grub starts kernel=>display manager(gdm) starts server manager (xorg) **guessing, maybe the SM starts before=> gdm starts session manager (xinit)=>xinit starts windows manager (i3)
+#GDM session configuration: install xinit and i3
+sudo pacman -S xorg-xinit
+#copy default xinitrc file and override it to use i3 isntead of xterm anf others
+cp /etc/X11/xinit/xinitrc ~/.xinitrc #this is going to be copied in home directory, comment all lines and just add: 
+```
+# start window manager
+exec i3
+```
+#note:  lines following a command using 'exec' would be ignored. At the very least, ensure that the last if block in /etc/X11/xinit/xinitrc is present in your ~/.xinitrc file to ensure that the scripts in /etc/X11/xinit/xinitrc.d are sourced.
+
+
+#install i3
+sudo pacman i3-wm
+# install yay for AUR project dependencies:
+https://github.com/Jguer/yay 
+mkdir tmp/ cd tmp # create a tmp folder to clone the project
+pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+ # install yay 
+yay -Y --sgendb & yay -Syu --devel # create dabatase for yay with:
+# install xinit-xsession for running the ~/.xinitrc
+yay -S xinit-xsession
+# make sure the ~/.xinitrc file is executable.
+chmod +x .xinitrc
+# set xinitrc as the session in your display manager's
+sudo su #log as sudo
+/etc/gdm/custom.conf #go here and write (replace username with your own)
+
+```
+# Enable automatic login for user
+[daemon]
+AutomaticLogin=username
+AutomaticLoginEnable=True
+```
+
+/var/lib/AccountsService/users/username #create the file if this does not exist and write:
+
+```
+XSession=i3
+```
+#move unnecesary genome sessions from /usr/share/xsessions to temporary folder
+#install kitty-git
+#install networkmanager-dmenu-git dunst
+#select the newtwork 
+networkmanager_dmenu 
